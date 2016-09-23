@@ -1,0 +1,58 @@
+{
+  "name": "eqcol",
+  "version": "0.0.0",
+  "description": "Equal effing columns",
+  "license": "MIT",
+  "repository": "awcross/eqcol",
+  "author": {
+    "name": "Alex Cross",
+    "url": "alexcross.io"
+  },
+  "main": "index.js",
+  "keywords": [
+    "equal",
+    "columns",
+    "row",
+    "height",
+    "browser",
+    "bootstrap",
+    "foundation"
+  ],
+  "scripts": {
+    "bundle": "node_modules/.bin/browserify src/eqcol.js -o dist/eqcol.js -t [babelify] -s Eqcol",
+    "min": "node_modules/.bin/uglifyjs dist/eqcol.js -o dist/eqcol.min.js -m",
+    "build": "npm test && npm run bundle && npm run min",
+    "test": "xo"
+  },
+  "dependencies": {
+    "element-dataset": "^1.3.0",
+    "customevent": "^0.1.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.14.0",
+    "babel-plugin-transform-object-assign": "^6.8.0",
+    "babel-preset-es2015": "^6.14.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.0",
+    "uglify-js": "^2.7.3",
+    "xo": "*"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-object-assign"
+    ]
+  },
+  "xo": {
+    "esnext": true,
+    "envs": [
+      "browser",
+      "es6"
+    ],
+    "rules": {
+      "padded-blocks": 0
+    }
+  }
+}

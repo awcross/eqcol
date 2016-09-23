@@ -1,0 +1,27 @@
+{
+  "name": "eqcol",
+  "main": "dist/eqcol.js",
+  "homepage": "https://github.com/awcross/eqcol",
+  "author": {
+  	"name": "Alex Cross",
+  	"url": "alexcross.io"
+  },
+  "description": "Equal effing columns",
+  "keywords": [
+	"equal",
+	"columns",
+	"row",
+	"height",
+	"browser",
+	"bootstrap",
+	"foundation"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
