@@ -8,7 +8,7 @@
     "name": "Alex Cross",
     "url": "alexcross.io"
   },
-  "main": "index.js",
+  "main": "src/eqcol.js",
   "keywords": [
     "equal",
     "columns",
