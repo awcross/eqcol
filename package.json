@@ -19,14 +19,14 @@
     "foundation"
   ],
   "scripts": {
+    "build": "npm test && npm run bundle && npm run minify",
     "bundle": "node_modules/.bin/browserify src/eqcol.js -o dist/eqcol.js -t [babelify] -s Eqcol",
-    "min": "node_modules/.bin/uglifyjs dist/eqcol.js -o dist/eqcol.min.js -m",
-    "build": "npm test && npm run bundle && npm run min",
+    "minify": "node_modules/.bin/uglifyjs dist/eqcol.js -o dist/eqcol.min.js -m",
     "test": "xo"
   },
   "dependencies": {
-    "element-dataset": "^1.3.0",
-    "customevent": "^0.1.1"
+    "customevent": "^1.0.0",
+    "element-dataset": "^1.3.0"
   },
   "devDependencies": {
     "babel-core": "^6.14.0",
@@ -43,6 +43,11 @@
     ],
     "plugins": [
       "transform-object-assign"
+    ]
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
     ]
   },
   "xo": {
