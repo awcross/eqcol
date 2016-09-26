@@ -11,7 +11,7 @@ ES2015 and Browserify
 $ npm install --save eqcol
 ```
 
-Browser
+Bower
 
 ```
 $ bower install --save eqcol
