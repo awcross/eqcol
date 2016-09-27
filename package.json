@@ -20,8 +20,8 @@
   ],
   "scripts": {
     "build": "npm test && npm run bundle && npm run minify",
-    "bundle": "node_modules/.bin/browserify src/eqcol.js -o dist/eqcol.js -t [babelify] -s Eqcol",
-    "minify": "node_modules/.bin/uglifyjs dist/eqcol.js -o dist/eqcol.min.js -m",
+    "bundle": "node_modules/.bin/browserify src/eqcol.js -o dist/eqcol.js -t [babelify] -s Eqcol && node_modules/.bin/browserify src/jquery-eqcol.js -o dist/jquery-eqcol.js -t [babelify] -s Eqcol",
+    "minify": "node_modules/.bin/uglifyjs dist/eqcol.js -o dist/eqcol.min.js -m && node_modules/.bin/uglifyjs dist/jquery-eqcol.js -o dist/jquery-eqcol.min.js -m",
     "test": "xo"
   },
   "dependencies": {
