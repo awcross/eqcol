@@ -1,4 +1,4 @@
-import 'element-dataset';
+import elemDataset from 'elem-dataset';
 import CustomEvt from 'customevent';
 
 const NAME = 'eqcol';
@@ -28,7 +28,7 @@ class Eqcol {
 			this._element = element;
 		}
 
-		this._options = Object.assign({}, DEFAULTS, this._element.dataset, options);
+		this._options = Object.assign({}, DEFAULTS, elemDataset(this._element), options);
 
 		// Give listeners enough time to attach
 		setTimeout(() => this.equalize(), 0);

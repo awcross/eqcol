@@ -1,7 +1,65 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Eqcol = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (factory());
+}(this, (function () { 'use strict';
+
+// <3 Modernizr
+// https://raw.githubusercontent.com/Modernizr/Modernizr/master/feature-detects/dom/dataset.js
 
 function useNative() {
+	var elem = document.createElement('div');
+	elem.setAttribute('data-a-b', 'c');
+
+	return Boolean(elem.dataset && elem.dataset.aB === 'c');
+}
+
+function nativeDataset(element) {
+	return element.dataset;
+}
+
+var index = useNative() ? nativeDataset : function (element) {
+	var map = {};
+	var attributes = element.attributes;
+
+	function getter() {
+		return this.value;
+	}
+
+	function setter(name, value) {
+		if (typeof value === 'undefined') {
+			this.removeAttribute(name);
+		} else {
+			this.setAttribute(name, value);
+		}
+	}
+
+	for (var i = 0, j = attributes.length; i < j; i++) {
+		var attribute = attributes[i];
+
+		if (attribute) {
+			var name = attribute.name;
+
+			if (name.indexOf('data-') === 0) {
+				var prop = name.slice(5).replace(/-./g, function (u) {
+					return u.charAt(1).toUpperCase();
+				});
+
+				var value = attribute.value;
+
+				Object.defineProperty(map, prop, {
+					enumerable: true,
+					get: getter.bind({ value: value || '' }),
+					set: setter.bind(element, name)
+				});
+			}
+		}
+	}
+
+	return map;
+};
+
+function useNative$1() {
 	if (typeof window.CustomEvent === 'function') {
 		return true;
 	}
@@ -10,7 +68,7 @@ function useNative() {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
-module.exports = useNative() ? window.CustomEvent : function (event, params) {
+var index$1 = useNative$1() ? window.CustomEvent : function (event, params) {
 	var e = document.createEvent('CustomEvent');
 
 	params = params || {
@@ -24,81 +82,229 @@ module.exports = useNative() ? window.CustomEvent : function (event, params) {
 	return e;
 };
 
-},{}],2:[function(require,module,exports){
-'use strict';
+var asyncGenerator = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
 
-function elementDatasetPolyfill() {
-	if (!document.documentElement.dataset && (!Object.getOwnPropertyDescriptor(Element.prototype, 'dataset') || !Object.getOwnPropertyDescriptor(Element.prototype, 'dataset').get)) {
-		var descriptor = {};
+  function AsyncGenerator(gen) {
+    var front, back;
 
-		descriptor.enumerable = true;
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
 
-		descriptor.get = function () {
-			var element = this;
-			var map = {};
-			var attributes = this.attributes;
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
 
-			function toUpperCase(n0) {
-				return n0.charAt(1).toUpperCase();
-			}
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
 
-			function getter() {
-				return this.value;
-			}
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
 
-			function setter(name, value) {
-				if (typeof value !== 'undefined') {
-					this.setAttribute(name, value);
-				} else {
-					this.removeAttribute(name);
-				}
-			}
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
 
-			for (var i = 0; i < attributes.length; i++) {
-				var attribute = attributes[i];
+        case "throw":
+          front.reject(value);
+          break;
 
-				// This test really should allow any XML Name without
-				// colons (and non-uppercase for XHTML)
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
 
-				if (attribute && attribute.name && /^data-\w[\w\-]*$/.test(attribute.name)) {
-					var name = attribute.name;
-					var value = attribute.value;
+      front = front.next;
 
-					// Change to CamelCase
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
 
-					var propName = name.substr(5).replace(/-./g, toUpperCase);
+    this._invoke = send;
 
-					Object.defineProperty(map, propName, {
-						enumerable: this.enumerable,
-						get: getter.bind({ value: value || '' }),
-						set: setter.bind(element, name)
-					});
-				}
-			}
-			return map;
-		};
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
 
-		Object.defineProperty(Element.prototype, 'dataset', descriptor);
-	}
-}
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
 
-module.exports = elementDatasetPolyfill;
-},{}],3:[function(require,module,exports){
-'use strict';
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
 
-require('element-dataset');
+  return {
+    wrap: function (fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function (value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
 
-var _customevent = require('customevent');
 
-var _customevent2 = _interopRequireDefault(_customevent);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+
+
+
+
+
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+var get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;
+
+    if (getter === undefined) {
+      return undefined;
+    }
+
+    return getter.call(receiver);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var set = function set(object, property, value, receiver) {
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent !== null) {
+      set(parent, property, value, receiver);
+    }
+  } else if ("value" in desc && desc.writable) {
+    desc.value = value;
+  } else {
+    var setter = desc.set;
+
+    if (setter !== undefined) {
+      setter.call(receiver, value);
+    }
+  }
+
+  return value;
+};
 
 var NAME = 'eqcol';
 
@@ -121,7 +327,7 @@ var Eqcol = function () {
 	function Eqcol(element, options) {
 		var _this = this;
 
-		_classCallCheck(this, Eqcol);
+		classCallCheck(this, Eqcol);
 
 		if (typeof element === 'string') {
 			this._element = document.querySelector(element);
@@ -129,7 +335,7 @@ var Eqcol = function () {
 			this._element = element;
 		}
 
-		this._options = _extends({}, DEFAULTS, this._element.dataset, options);
+		this._options = _extends({}, DEFAULTS, index(this._element), options);
 
 		// Give listeners enough time to attach
 		setTimeout(function () {
@@ -137,7 +343,7 @@ var Eqcol = function () {
 		}, 0);
 	}
 
-	_createClass(Eqcol, [{
+	createClass(Eqcol, [{
 		key: 'equalize',
 		value: function equalize() {
 			var _this2 = this;
@@ -148,7 +354,7 @@ var Eqcol = function () {
 				return;
 			}
 
-			var preEqualize = new _customevent2.default(EVENT.before, {
+			var preEqualize = new index$1(EVENT.before, {
 				cancelable: true
 			});
 
@@ -216,7 +422,7 @@ var Eqcol = function () {
 				_loop();
 			}
 
-			var postEqualize = new _customevent2.default(EVENT.after, {
+			var postEqualize = new index$1(EVENT.after, {
 				cancelable: true
 			});
 
@@ -245,11 +451,9 @@ var Eqcol = function () {
 			return col.offsetHeight;
 		}
 	}]);
-
 	return Eqcol;
 }();
 
 module.exports = Eqcol;
 
-},{"customevent":1,"element-dataset":2}]},{},[3])(3)
-});
+})));

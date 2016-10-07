@@ -8,7 +8,7 @@
     "name": "Alex Cross",
     "url": "alexcross.io"
   },
-  "main": "src/eqcol.js",
+  "main": "dist/eqcol.js",
   "keywords": [
     "equal",
     "columns",
@@ -16,26 +16,36 @@
     "height",
     "browser",
     "bootstrap",
-    "foundation"
+    "foundation",
+    "match"
   ],
   "scripts": {
     "build": "npm test && npm run bundle && npm run minify",
-    "bundle": "node_modules/.bin/browserify src/eqcol.js > dist/eqcol.js -t [ babelify --presets [es2015] --plugins [transform-object-assign] ] -s Eqcol && node_modules/.bin/browserify src/jquery-eqcol.js > dist/jquery-eqcol.js -t [ babelify --presets [es2015] --plugins [transform-object-assign] ] -s Eqcol",
-    "minify": "node_modules/.bin/uglifyjs dist/eqcol.js > dist/eqcol.min.js -m && node_modules/.bin/uglifyjs dist/jquery-eqcol.js > dist/jquery-eqcol.min.js -m",
+    "bundle": "rollup -c",
+    "minify": "node_modules/.bin/uglifyjs dist/eqcol.js > dist/eqcol.min.js -m",
     "test": "xo"
   },
   "dependencies": {
     "customevent": "^1.0.0",
-    "element-dataset": "^1.3.0"
+    "elem-dataset": "^1.1.1"
   },
   "devDependencies": {
-    "babel-core": "^6.14.0",
+    "babel-core": "^6.17.0",
     "babel-plugin-transform-object-assign": "^6.8.0",
-    "babel-preset-es2015": "^6.14.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.0",
+    "babel-preset-es2015-rollup": "^1.2.0",
+    "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-commonjs": "^5.0.4",
+    "rollup-plugin-node-resolve": "^2.0.0",
     "uglify-js": "^2.7.3",
     "xo": "*"
+  },
+  "babel": {
+    "presets": [
+        "es2015-rollup"
+    ],
+    "plugins": [
+      "transform-object-assign"
+    ]
   },
   "xo": {
     "esnext": true,
