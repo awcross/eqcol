@@ -1,6 +1,6 @@
 {
   "name": "eqcol",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Equal effing columns",
   "license": "MIT",
   "repository": "awcross/eqcol",
@@ -41,7 +41,7 @@
   },
   "babel": {
     "presets": [
-        "es2015-rollup"
+      "es2015-rollup"
     ],
     "plugins": [
       "transform-object-assign"
