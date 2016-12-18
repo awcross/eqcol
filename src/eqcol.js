@@ -21,28 +21,23 @@ const slice = Array.prototype.slice;
 class Eqcol {
 
 	constructor(element, options) {
-		if (typeof element === 'string') {
-			this._element = document.querySelector(element);
-
-		} else if (element.nodeType) {
-			this._element = element;
-		}
-
+		this._element = element;
 		this._options = Object.assign({}, DEFAULTS, elemDataset(this._element), options);
-
-		// Give listeners enough time to attach
-		setTimeout(() => this.equalize(), 0);
 	}
 
 	equalize() {
-		let $items = this._getItems();
+		let items = this._getItems();
 
-		if (!$items.length) {
+		if (items.length === 0) {
 			return;
 		}
 
+		const length = items.length;
 		const preEqualize = new CustomEvt(EVENT.before, {
-			cancelable: true
+			cancelable: true,
+			detail: {
+				length
+			}
 		});
 
 		this._element.dispatchEvent(preEqualize);
@@ -50,8 +45,11 @@ class Eqcol {
 			return;
 		}
 
-		while ($items.length > 0) {
-			let $cols = slice.call($items);
+		// Reset heights
+		this._reset(items);
+
+		while (items.length > 0) {
+			let cols = slice.call(items);
 
             // Keep unselected columns
 			const temp = [];
@@ -60,10 +58,10 @@ class Eqcol {
 				const that = this;
 
 				// Get top offset of first item in the row
-				const offset = $items[0].getBoundingClientRect().top;
+				const offset = items[0].getBoundingClientRect().top;
 
 				// Get all columns with the same offset
-				$cols = $cols.filter(item => {
+				cols = cols.filter(item => {
 					if (that._getHeight(item) > 0) {
 						if (item.getBoundingClientRect().top === offset) {
 							return true;
@@ -76,18 +74,18 @@ class Eqcol {
 				});
 			}
 
-			if ($cols.length === 1) {
-				const height = this._getHeight($cols[0]);
+			if (cols.length === 1) {
+				const height = this._getHeight(cols[0]);
 
 				if (height < this._options.minHeight) {
-					$cols[0].style.height = `${this._options.minHeight}px`;
+					cols[0].style.height = `${this._options.minHeight}px`;
 
 				} else {
-					$cols[0].style.height = 'auto';
+					cols[0].style.height = 'auto';
 				}
 
-			} else if ($cols.length > 1) {
-				const heights = $cols.map(this._getHeight);
+			} else if (cols.length > 1) {
+				const heights = cols.map(this._getHeight);
 
 				let max = this._options.useTallest ?
 					Math.max.apply(null, heights) :
@@ -96,29 +94,30 @@ class Eqcol {
 				// Make sure the height is greater than minHeight
 				max = Math.max(this._options.minHeight, max);
 
-				$cols.forEach(item => {
+				cols.forEach(item => {
 					item.style.height = `${max}px`;
 				});
 			}
 
 			// Copy unselected columns to items
-			$items = temp;
+			items = temp;
 		}
 
 		const postEqualize = new CustomEvt(EVENT.after, {
-			cancelable: true
+			detail: {
+				length
+			}
 		});
 
 		this._element.dispatchEvent(postEqualize);
 	}
 
 	destroy() {
-		const items = this._getItems();
+		this._reset();
+	}
 
-		// Reset heights
-		slice.call(items).forEach(item => {
-			item.style.height = 'auto';
-		});
+	_getHeight(col) {
+		return col.offsetHeight;
 	}
 
 	_getItems() {
@@ -127,9 +126,30 @@ class Eqcol {
 		return this._element.querySelectorAll(`[${this._options.watchAttr}="${group}"]`);
 	}
 
-	_getHeight(col) {
-		return col.offsetHeight;
+	_reset(items = this._getItems()) {
+		slice.call(items).forEach(item => {
+			item.style.height = 'auto';
+		});
 	}
 }
 
-module.exports = Eqcol;
+export default function (element, options) {
+	if (typeof element === 'string') {
+		element = document.querySelectorAll(element);
+	}
+
+	const items = element instanceof NodeList ? slice.call(element) : [...element];
+
+	for (const item of items) {
+		const instance = new Eqcol(item, typeof options === 'object' && options);
+
+		if (typeof options === 'string') {
+			instance[options]();
+
+		} else {
+			setTimeout(() => instance.equalize());
+		}
+	}
+
+	return items;
+}

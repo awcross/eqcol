@@ -6,7 +6,7 @@ export default {
 	entry: 'src/eqcol.js',
 	dest: 'dist/eqcol.js',
 	format: 'umd',
-	moduleName: 'Eqcol',
+	moduleName: 'eqcol',
 	plugins: [
 		resolve(),
 		commonjs({
